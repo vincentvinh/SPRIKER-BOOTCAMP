@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<config>
+    <string-reverser>
+        <label>String Reverser</label>
+        <title>String Reverser</title>
+        <bundle>string-reverser</bundle>
+        <controller>index</controller>
+        <action>index</action>
+    </string-reverser>
+</config>
