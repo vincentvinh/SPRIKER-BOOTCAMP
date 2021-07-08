@@ -7,13 +7,21 @@
 
 namespace Pyz\Zed\Oms;
 
+use Pyz\Zed\Oms\Communication\Plugin\Command\Demo\PayCommand;
+use Pyz\Zed\Oms\Communication\Plugin\Condition\Demo\IsAuthorizedCondition;
 use Pyz\Zed\Oms\Communication\Plugin\Oms\InitiationTimeoutProcessorPlugin;
 use Spryker\Zed\Availability\Communication\Plugin\AvailabilityHandlerPlugin;
 use Spryker\Zed\Kernel\Container;
 use Spryker\Zed\Oms\Communication\Plugin\Oms\Command\SendOrderConfirmationPlugin;
 use Spryker\Zed\Oms\Communication\Plugin\Oms\Command\SendOrderShippedPlugin;
 use Spryker\Zed\Oms\Dependency\Plugin\Command\CommandCollectionInterface;
+use Spryker\Zed\Oms\Dependency\Plugin\Condition\ConditionCollectionInterface;
+use Spryker\Zed\Oms\Dependency\Plugin\ReservationHandlerPluginInterface;
 use Spryker\Zed\Oms\OmsDependencyProvider as SprykerOmsDependencyProvider;
+use Spryker\Zed\OmsExtension\Dependency\Plugin\OmsManualEventGrouperPluginInterface;
+use Spryker\Zed\OmsExtension\Dependency\Plugin\OmsOrderMailExpanderPluginInterface;
+use Spryker\Zed\OmsExtension\Dependency\Plugin\ReservationAggregationStrategyPluginInterface;
+use Spryker\Zed\OmsExtension\Dependency\Plugin\TimeoutProcessorPluginInterface;
 use Spryker\Zed\ProductBundle\Communication\Plugin\Oms\ProductBundleAvailabilityHandlerPlugin;
 use Spryker\Zed\ProductPackagingUnit\Communication\Plugin\Oms\ProductPackagingUnitReservationAggregationStrategyPlugin;
 use Spryker\Zed\ProductPackagingUnit\Communication\Plugin\Reservation\LeadProductReservationHandlerPlugin;
@@ -27,9 +35,9 @@ class OmsDependencyProvider extends SprykerOmsDependencyProvider
     public const FACADE_TRANSLATOR = 'FACADE_TRANSLATOR';
 
     /**
-     * @param \Spryker\Zed\Kernel\Container $container
+     * @param Container $container
      *
-     * @return \Spryker\Zed\Kernel\Container
+     * @return Container
      */
     public function provideBusinessLayerDependencies(Container $container): Container
     {
@@ -39,17 +47,24 @@ class OmsDependencyProvider extends SprykerOmsDependencyProvider
             $commandCollection->add(new SendOrderShippedPlugin(), 'Oms/SendOrderShipped');
             $commandCollection->add(new StartReturnCommandPlugin(), 'Return/StartReturn');
             $commandCollection->add(new GenerateOrderInvoiceCommandPlugin(), 'Invoice/Generate');
+            $commandCollection->add(new PayCommand(), 'Demo/Pay');
 
             return $commandCollection;
+        });
+
+        $container->extend(self::CONDITION_PLUGINS, function (ConditionCollectionInterface $conditionCollection) {
+            $conditionCollection->add(new IsAuthorizedCondition(), 'Demo/IsAuthorized');
+
+            return $conditionCollection;
         });
 
         return $container;
     }
 
     /**
-     * @param \Spryker\Zed\Kernel\Container $container
+     * @param Container $container
      *
-     * @return \Spryker\Zed\Oms\Dependency\Plugin\ReservationHandlerPluginInterface[]
+     * @return ReservationHandlerPluginInterface[]
      */
     protected function getReservationHandlerPlugins(Container $container): array
     {
@@ -61,9 +76,9 @@ class OmsDependencyProvider extends SprykerOmsDependencyProvider
     }
 
     /**
-     * @param \Spryker\Zed\Kernel\Container $container
+     * @param Container $container
      *
-     * @return \Spryker\Zed\OmsExtension\Dependency\Plugin\OmsOrderMailExpanderPluginInterface[]
+     * @return OmsOrderMailExpanderPluginInterface[]
      */
     protected function getOmsOrderMailExpanderPlugins(Container $container): array
     {
@@ -73,9 +88,9 @@ class OmsDependencyProvider extends SprykerOmsDependencyProvider
     }
 
     /**
-     * @param \Spryker\Zed\Kernel\Container $container
+     * @param Container $container
      *
-     * @return \Spryker\Zed\OmsExtension\Dependency\Plugin\OmsManualEventGrouperPluginInterface[]
+     * @return OmsManualEventGrouperPluginInterface[]
      */
     protected function getOmsManualEventGrouperPlugins(Container $container): array
     {
@@ -85,7 +100,7 @@ class OmsDependencyProvider extends SprykerOmsDependencyProvider
     }
 
     /**
-     * @return \Spryker\Zed\OmsExtension\Dependency\Plugin\ReservationAggregationStrategyPluginInterface[]
+     * @return ReservationAggregationStrategyPluginInterface[]
      */
     protected function getReservationAggregationStrategyPlugins(): array
     {
@@ -95,9 +110,9 @@ class OmsDependencyProvider extends SprykerOmsDependencyProvider
     }
 
     /**
-     * @param \Spryker\Zed\Kernel\Container $container
+     * @param Container $container
      *
-     * @return \Spryker\Zed\Kernel\Container
+     * @return Container
      */
     public function provideCommunicationLayerDependencies(Container $container): Container
     {
@@ -108,9 +123,9 @@ class OmsDependencyProvider extends SprykerOmsDependencyProvider
     }
 
     /**
-     * @param \Spryker\Zed\Kernel\Container $container
+     * @param Container $container
      *
-     * @return \Spryker\Zed\Kernel\Container
+     * @return Container
      */
     protected function addTranslatorFacade(Container $container): Container
     {
@@ -122,7 +137,7 @@ class OmsDependencyProvider extends SprykerOmsDependencyProvider
     }
 
     /**
-     * @return \Spryker\Zed\OmsExtension\Dependency\Plugin\TimeoutProcessorPluginInterface[]
+     * @return TimeoutProcessorPluginInterface[]
      */
     protected function getTimeoutProcessorPlugins(): array
     {
